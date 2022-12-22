@@ -1,0 +1,364 @@
+---
+title: "Under the Radar: Analyzing Recent Twitter Information Operations to Improve Detection and Removal of Malicious Actors, Part 2"
+description: | 
+  A social network analysis of recent Russian, Iranian,and Chinese Information Operations intended to test if there are discernible similarities or differences between IO activity and legitimate activity to provide ways for social media companies to combat malicious actors.
+date: 12/8/2022
+author:
+  - name: Cody J. Wilson 
+    url: https://wonksecurity.com
+citation:
+  url: https://wonksecurity.com/research
+bibliography: biblio.bib
+format:
+  docx
+always_allow_html: true
+editor: visual
+---
+
+# Abstract
+
+This report builds upon the work done in part one of this series by examining the network structure of three information operations (IOs) that were removed from Twitter in 2021. The analysis that follows uses social network analysis (SNA) to explore the structure, key network statistics, and measures of centrality for network graphs created from Twitter mentions. Five data sets feature in this analysis, three IO networks and two control networks. Data for the three IO networks came from Twitter's Transparency Center and contained tweets from a Russian, Chinese, and Iranian IO, respectively. In addition, two COVID-19 tweet data sets from Kaggle served as the controls. This project seeks to determine if it is possible to make cross-network comparisons that could enhance the early detection of IOs on social media platforms like Twitter. The analysis found that while each network was structurally unique, the key SNA statistics failed statistical significance testing when checking for differences between the IO group and control group. This may be the result of a small network sample size (n=5). However, this study also found that measures of centrality had statistically significant differences between the IO group and the control group. This suggests that measures of centrality, particularly eigenvector centrality and Pagerank, could be useful metrics for differentiating IOs from legitimate Twitter conversations.
+
+# Introduction
+
+The [previous report](https://wonksecurity.com/wp-content/uploads/2022/10/Twitter_info_op_report_v1-1.pdf) in this series examined three IOs removed from Twitter in 2021 and concluded by warning analysts and researchers who seek to counter IOs of the dangers of tunnel vision and focusing too much on obvious threats at the expense of missing lesser known but no less dangerous threats. This conclusion stems from demonstrating how an Iranian IO consisting of 209 accounts outperformed Russia's Internet Research Agency (IRA) and China's army of over 1,200 Twitter accounts to reach possibly hundreds of thousands of people. Several of the accounts in each network exhibited power law-like behavior, whereby those accounts, in some cases, consumed virtually all the oxygen in the room, so to speak. These accounts attracted more attention and interest to themselves than the combined efforts of all the other accounts in their respective network. For influential accounts like this, particularly in the Iranian network, "going viral," or rapidly spreading into the mainstream consciousness, is only a single influencer tweet away. This highlights the need for haste in disrupting such operations. Yet it is not enough simply to warn of lesser-known threats; it is also necessary to consider what tools could enable social media companies to disrupt such threats or to allow researcher to report IO threats on their own.
+
+This second part of the analysis seeks to build upon the previous by answering the following research question: are these three information operations similar to each other in terms of their function and structure, and are those similarities, if any exist, significant enough to constitute meaningful differences from normal social media activity? The purpose of this analysis is to determine if SNA can provide additional tools that could allow social media companies to identify more quickly suspicious activity that may require additional investigation and subsequent removal from online platforms. The hypothesis prior to beginning this research was that the IO networks would be structurally unique, and this uniqueness would enable statistical differentiation from the structures of the control group.
+
+The findings of this study appear to confirm this hypothesis, albeit only partially and not in the way expected. Each of the three IO networks possesses a unique structure. However, of the eight key network statistics calculated for each of the three networks in the IO group and the two networks in the control group, only one, farthest vertex, appeared to have a statistically significant difference across the two groups. These eight statistics were the statistics believed to be most fruitful for differentiating networks. Instead, the six measures of centrality that were separately calculated proved to be the most fruitful for differentiating networks. Each measure of centrality had statistically significant differences between the IO and control groups. If these same results hold across a larger number of networks, it appears that these metrics can differentiate IOs from legitimate networks on social media platforms like Twitter. Such a finding could help verify the legitimacy of isolated conversations, such as those found in trending topics, as the IO networks appeared to organize themselves around key vertices differently than the control networks.
+
+# Methodology
+
+To prepare for this analysis, data collection resulted in the acquisition of five data sets, resulting in the creation of five different networks. The three IO data sets of interest came from Twitter's Transparency Center. Separately, two control data sets for baseline network structure comparisons were acquired from researcher Arunava Kumar Chakraborty, who shared the data on Kaggle [@arunavakumarchakraborty2021; @chakraborty2021a; @twittertransparencycenter2022a].
+
+The details of the three IO data sets of interest, containing over 15,000 suspected Chinese IO tweets, over 70,000 suspected Russian IO tweets, and over 560,000 suspected Iranian IO tweets, respectively, are detailed in the write-up for part one of this analysis project, located [here](https://wonksecurity.com/wp-content/uploads/2022/10/Twitter_info_op_report_v1-1.pdf). Data cleaning for the three IO data sets used the process detailed in part one as well. The cleaning script is located at <https://github.com/CWilson01/twitter-info-ops-pt1>. These three data sets comprised the "IO networks" group.
+
+The first control data set consists of COVID-19-related tweets collected and made publicly available by A. K. Chakraborty and A. K. Kolya. The data set was originally used as part of a machine-learning model published in an academic paper ([@chakraborty2021a]. The first data set contained over 200,000 tweets based on hashtags such as covid-19, coronavirus, covid, covaccine, lockdown, homequarantine, quarantinecenter, socialdistancing, stayhome, and staysafe. Data collection for these tweets took place from April 19 to June 20, 2020. The second control data set consisted of 320,000 tweets from the same hashtags and was collected from August 20 to October 20, 2020 [@arunavakumarchakraborty2021].
+
+These two COVID-19 data sets became the "control" group for several reasons. The data sets were high quality, had already been cleaned and used for machine learning model trained in an academic context, were quite large, and had a variety of tweets contained therein. The goal in selecting control data sets was to acquire Tweets focusing on specific topics, just as information operations focus on specific topics. However, the control tweets also required a mix of authentic, uncoordinated conversations and mentions by legitimate accounts spanning a wide geographical space. The tweets found in these data sets meet these requirements by containing naturally flowing, legitimate conversations about COVID-19 to compare against the coordinated, inauthentic behavior exhibited by the IO networks.
+
+After selection and acquisition, all five data sets were pre-processed and transformed into network graphs to model the connections between Twitter users in each network. For each data set, the user_mentions variable served to create the network. User_mentions listed all accounts mentioned by a particular account, separated by commas. To produce one-to-one connections, these values were transformed to long data to create a functional edgelist, with user_screen_name serving as one part of the connection and user_mentions serving as the other. The igraph R package helped create both directed and undirected networks graphs for each data set. The directed network maintained the direction of each interaction, while the undirected network allowed for analyses that only run on undirected networks.
+
+To ensure each of the three IO networks of interest had unique network structures, as opposed to structures that came about by pure chance, 100 random graphs were created based on the characteristics present in each IO graph. The mean distance and transitivity metrics, defined in the next section, of the random graphs were then compared to each IO graph. Each IO graph was unique in its structure and not the result of random noise. An example of this comparison features below in Figure 1. To conduct this test, two histograms were constructed using the mean distances and transitivity, respectively, for each of the 100 random graphs. The red dotted line seen below shows the mean distance for the Russian network. Given this line clearly differs from the mean distance of every randomly produced graph, the unique structure of the graph can be concluded. The code to verify the uniqueness of each network is in the R script for this project linked below.
+
+![Difference in Mean Distance for the Russian Network (red line) from Randomly Generated Graphs](Russia%20mean%20distance%20difference%20from%20random.png){fig-align="center"}
+
+To prepare the networks for analysis, a custom function checked for any isolated nodes in each graph; the function found no isolated nodes requiring removal. After this, the data analysis process started with calculation of ten key network statistics. Next, analysis continued with the calculation of six measures of centrality. Discussion of these results follows in the next section.
+
+Lastly, each directed network was loaded into Gephi to create the network graph visualizations presented in this report. The details to recreate each specific visual are listed in comments in the social network analysis R script used to analyze the networks. The R script resides at <https://github.com/CWilson01/twitter-info-ops-pt2>. Additionally, the ForceAtlas 2 algorithm used by Gephi to produce network visuals is stochastic and generates slightly different visuals on each running. Thus, the Gephi files used in this analysis also reside on GitHub.
+
+# Results
+
+The presentation of this study's findings first begins with some of the key structural and centrality findings for each of the IO networks and the two COVID-19 control networks. Afterward, the feasibility of conducting cross-network comparisons is discussed.
+
+## Russia
+
+The Russian Internet Research Agency (IRA) Twitter mentions network had 8,012 vertices. Each vertex either belonged to a suspected IO account or received a mention by one of the suspected IO accounts. The network contained 42,376 edges, corresponding to the number of interactions (Twitter mentions) made by the vertices (Twitter accounts) in the network. The mean distance, which measures the average distance, or number of leaps, it takes to get from any two vertices in the network, was 1.348. A lower mean distance implies greater interconnection, and, as will be seen in a table later in this report, the Russian network had the lowest mean distance and thus a greater level of interconnection between vertices. However, the network's transitivity, or the probability that adjacent vertices of a given vertex share a connection to each other, was the lowest of the five networks with a value of 3.351E-05, an order of magnitude smaller than the next smallest value. This suggests that even though there was higher interconnection between vertices, adjacent vertices often did not interact with each other. This makes sense when considering that the network is a suspected information operation, where Russian accounts may be mentioning other accounts to further their own objectives, yet those mentioned accounts might not know of or interact with each other.
+
+The Russian network's modularity value, a metric used to measure how clustered a network is into smaller communities, was 0.5904. A higher value suggests a greater tendency for smaller communities or cliques to form within the network. This indicates the Russian network was considerably less community driven than the control networks and was more similar to its fellow IO networks in terms of modularity. There were nine major communities present in the Russian network. The communities value tells how many major sub-networks exist within the overarching network. This again suggests the Russian IRA network was less community or clique-oriented than the control networks. This too makes sense when considering that an information operation network does not focus on building a sense of community with fellow like-minded users. Instead, IOs focus on spreading targeted, politically motivated messages to as many viewers as possible. While some IOs certainly may target specific sub-groups, such as the IRA's targeting of grass-roots organizations in the lead up to the 2016 U.S. Presidential Election, the overall goal remains to influence as many hearts and minds as possible within that sub-group to meet a specific set of objectives (Office of Special Counsel Robert S. Mueller, III, 2019).
+
+The farthest vertex value for the Russian network was two. This metric reflects the overall width of the network from the two farthest away vertices. Put another way, farthest vertices shows how many jumps one would have to make to traverse the network at its widest point. This means there was often only one intermediary between vertices on opposite sides of the Russian network, suggesting a more close-knit network compared to the control networks. The Russian network's edge density was 6.6E-04. Edge density is another measure of how interconnected a network is, with a higher value suggesting greater interconnection. For context, the Russian network was two orders of magnitude more interconnected on this metric than the controls. Despite this interconnection, there was zero reciprocity detected in the network. Reciprocity determines how often an interaction is reciprocated. This suggests interactions within the network were exclusively one-way. That is, those mentioned by accounts in the IO, never mentioned the IO account back and vice-versa.
+
+The Russian network does exhibit an interesting characteristic compared to the other IOs and control networks with regard to its assortativity value. Assortativity is a measure of preferential attachment by some vertices in a network to other similar vertices. This is similar to how individuals attach to other like-minded individuals or form cliques. Unlike the Iranian or Chinese networks, which had positive assortativity, and the control groups, which had assortativity very close to zero, the Russian network exhibited negative assortativity, with a value of -0.069. That is, the Russian network appeared to discourage clique formation, either deliberately or inadvertently. As mentioned above, IOs seek to get their message in front of as many viewers as they can but also attempt to target specific sub-groups to increase the effectiveness of their messaging. This does not seem to be the case for the Russian network, unlike the Iranian or Chinese networks. The accounts mentioned in the network appear to be somewhat less similar (and presumably more varied across the ideological spectrum) to each other than that seen in the legitimate conversations found in the control networks, and these accounts were substantially less similar from the targeted mentions found in the Iranian and, to a lesser extent, Chinese networks. It is not entirely clear why the network exhibits this characteristic. It is possible that the IRA's prior experience during the 2016 presidential election and the subsequent focus on its micro-targeting of groups during the Russia investigation may provide some explanation, such as the IRA adjusted its tactics to evade detection, but it is not clear from the available data that this is the case.
+
+To get a better sense of the interconnectedness of the vertices in the IO, six measures of centrality for the Russian network were also calculated. These centrality measurements were betweenness, eigenvector centrality, Pagerank, degree in, degree out, and strength. Betweenness is the number of times a particular vertex serves as the intermediary between other vertices. For example, if Jane talks to both John and Linda regularly, then Jane would have higher betweenness because she is on the shortest path connecting John to Linda. Eigenvector centrality is a measure of how well connected a particular vertex is within the network. However, a high eigenvector centrality indicates a vertex is not only highly connected but that its connections also have many connections of their own. For example, if Jane was highly popular and knew many other highly popular individuals, she would have high eigenvector centrality in her social network. Pagerank is similar to eigenvector centrality in that it calculates a vertex's connectivity alongside the connectivity of that vertex's connections, but it differs by adding a directionality of influence and a weight value. It takes its name from Google's PageRank, which is named after Google co-founder Larry Page and, among other things, ranks pages higher in the search engine if they are linked to by other high quality sites. Degree in and degree out are measurements of connectedness to other vertices in directed networks. Degree in is a measure of how many incoming connections a particular vertex has from other vertices. Conversely, degree out is a measure of how many outgoing connections that vertex has to other vertices. Strength measures how strongly connected vertices are within a network by applying weighted values to the connections between vertices, similar to the weight applied by Pagerank. More strongly connected vertices often serve as key parts of a network (Disney, 2020). For example, the ringleader of a jihadist terror cell might have high strength within the network because he coordinates tasks between the various cell members as well as serving as a conduit to and from the terrorist group's leader.
+
+For each of the above measures of centrality, the most central vertices were calculated. Unfortunately, since a large number of the top vertices were hashed by Twitter, it is difficult to determine the account names in the lists of vertices produced by the igraph R package, thus the aggregated results are presented in Table 1 below. As can be seen in the table, on average, vertices within the Russian network were not particularly central to the network, but given that each metric is highly right skewed, this suggests there were a handful of highly central accounts, much like the power law-like behavior seen in the descriptive analysis of this IO in [part one](https://github.com/CWilson01/twitter-info-ops-pt1).
+
+```{r warning = FALSE}
+#| echo: false
+#| label: tbl-ru_cent
+#| tbl-cap-location: bottom
+#| tbl-cap: Centrality Statistics for the Russian Network
+suppressPackageStartupMessages(library(tidyverse))
+library(kableExtra, warn.conflicts = FALSE, quietly = TRUE, verbose = FALSE)
+library(igraph, warn.conflicts = FALSE, quietly = TRUE, verbose = FALSE)
+library(splitstackshape, warn.conflicts = FALSE, quietly = TRUE, verbose = FALSE)
+
+# Disabling scientific notation to improve readability of certain variables.
+# options(scipen=0, digits=7) # To return to default setting
+options(scipen = 999)
+
+# Setting seed for results replication
+set.seed(12345)
+
+russia_clean <- read_csv("russia_2021_cleaned.csv", show_col_types = FALSE)
+
+russia_clean <- cSplit(russia_clean, "user_mentions", sep=",", direction = "long", type.convert = TRUE) #as.is warning surpressed by warning = FALSE
+
+russia_net_d <- russia_clean %>%
+  select(c(user_screen_name, user_mentions)) %>% # selects userid and those mentioned
+  filter(!is.na(user_mentions)) %>% # removes numerous NA values that would negatively impact graph
+  filter(user_mentions != 0) %>% # removes zero values present
+  graph_from_data_frame # creates network graph
+
+isolated_ru <- which(degree(russia_net_d) == 0)
+net_clean_ru <- delete.vertices(russia_net_d, isolated_ru) # Zero values were dropped
+
+# Create data frame with six measures of centrality, betweeness, eigenvector centrality, Pagerank, degree in, degree out, and strength.
+ru_cent<- data.frame(between = betweenness(net_clean_ru), eigenvector = centr_eigen(net_clean_ru)$vector,
+                     Pagerank = (page_rank(net_clean_ru)$vector), degree_in = degree(net_clean_ru, mode = "in"),
+                     degree_out = degree(net_clean_ru, mode = "out"), strength = strength(net_clean_ru))
+ru_cent <- cbind(account = rownames(ru_cent), ru_cent)
+
+kbl(summary(ru_cent[2:7]), format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+```
+
+Figure 2 below, produced in Gephi, shows the Russian network colorized by the most influential communities within the network, with larger vertices denoting a higher degree compared to other vertices. It is worth noting that the most influential nodes lack label unlike some of the later graphs. This is due to the aforementioned username hashing by Twitter, which stripped useful identifying information from many vertices in the network. As some of the above metrics suggest, the structure of the graph shows greater interconnection than the control networks, alongside the appearance of several communities. These communities appear to be driven, or perhaps even created, by several influential IO accounts mentioning a large number of other accounts, with the dark green vertex (which unfortunately has a hashed username) in the upper left being by far the most prolific at mentioning other accounts. In most instances, it appears that accounts received no more than two mentions, and many accounts received only a single mention. This creates the characteristic appearance of dandelion seeds or fireworks coming off the more central vertices seen in each IO network graph produced in this report.
+
+![Russia IO Mentions Network, 2021](mentions_Russia_2021_Network.png){fig-align="center"}
+
+## Iran
+
+The Iranian Twitter mentions network contained 55,348 vertices and 287,988 edges, making it the largest of the three IO networks by far. The mean distance was 2.355. This was the highest of all five networks observed, suggesting a lower level of interconnection. The network's transitivity was 1.51E-04. This was one order of magnitude higher than the Russian network, one order of magnitude lower than the Chinese network, and of equivalent magnitude to the control networks. This suggests that even though there was lower interconnection between vertices, adjacent vertices to any particular vertex tended to interact with each other more often than the Russian network and only slightly less often than the control networks. This closer alignment to the control networks could imply the Iranian network deliberately or accidentally did a better job mimicking real social media activity compared to its counterparts Russia and China.
+
+The Iranian network's modularity was 0.827. This suggests the Iranian network was highly modular, with sub-groups or cliques forming on a level closer to that seen in the control networks than that of its counterparts. There were 26 major communities present in the Iranian network. While the IO had a tendency toward forming cliques, as evidenced by its high modularity score, 26 major communities is still significantly smaller than the control networks. That said, while the Iranian network was quite active, as evidenced by its large edge count, it had only about a quarter of the number of vertices as the control networks, which may also explain the smaller number of communities as there were simply fewer accounts to form communities around. It could also be that many cliques in the network were simply too small to be classified as major communities.
+
+The farthest vertex value for the Iranian network was five. This means more jumps were required to get to opposing sides of the network. This suggests a network that was less close-knit than the Russian network but more close-knit that either China's network or the control networks. The network's edge density was 9.4E-05. The Iranian network was one order of magnitude more interconnected on this metric than the controls and one order of magnitude less interconnected than Russia, showing consistency across metrics. The network had a reciprocity score of 8.32E-03. This value is on par with that seen in the control networks, suggesting that people mentioned by Iranian IO accounts actually reciprocated back, unlike in either the Russian or the Chinese networks.
+
+The Iranian network was highly encouraging of clique and community formation, further suggesting that the network had multiple small communities, which were below the community detection threshold used in the igraph R package. Case in point, its assortativity value was 0.7018, a massive amount larger than any other network. This suggests the Iranian network very carefully targeted its messaging in ways that allowed the accounts to insert themselves into communities better than either Russia or China did. However, this over targeting makes it stand out from normal conversations because the average user does not appear to go to such great lengths to seek out like-minded individuals in the way the Iranian network did. As a result, this assortativity was also much larger than the control networks.
+
+To get a better sense of the interconnectedness of the network, the six measures of centrality for the Iranian network were also calculated. For each metric, the most central vertices were calculated. As before, the aggregated results appear in Table 2 below due to username hashing. As can be seen in the table, a power law-like phenomenon similar to that seen in the Russian network occurred. That is, on average, most vertices were neither central nor pivotal to the overall network; however, a few vertices were both incredibly well connected and highly important.
+
+```{r warning = FALSE}
+#| echo: false
+#| label: tbl-ir_cent
+#| tbl-cap-location: bottom
+#| tbl-cap: Centrality Statistics for the Iranian Network
+
+iran_clean <- read_csv("iran_2021_cleaned.csv", show_col_types = FALSE)
+
+iran_clean <- cSplit(iran_clean, "user_mentions", sep=",", direction = "long", type.convert = TRUE) #as.is warning surpressed by warning = FALSE
+
+iran_net_d <- iran_clean %>%
+  select(c(user_screen_name, user_mentions)) %>% # selects userid and those mentioned
+  filter(!is.na(user_mentions)) %>% # removes numerous NA values that would negatively impact graph
+  filter(user_mentions != 0) %>% # removes zero values present
+  graph_from_data_frame # creates network graph
+
+isolated_ir <- which(degree(iran_net_d) == 0)
+net_clean_ir <- delete.vertices(iran_net_d, isolated_ir) # Zero values were dropped
+
+# Create data frame with six measures of centrality, betweeness, eigenvector centrality, Pagerank, degree in, degree out, and strength.
+ir_cent<- data.frame(between = betweenness(net_clean_ir), eigenvector = centr_eigen(net_clean_ir)$vector,
+                     Pagerank = (page_rank(net_clean_ir)$vector), degree_in = degree(net_clean_ir, mode = "in"),
+                     degree_out = degree(net_clean_ir, mode = "out"), strength = strength(net_clean_ir))
+ir_cent <- cbind(account = rownames(ir_cent), ir_cent)
+
+kbl(summary(ir_cent[2:7]), format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+```
+
+Figure 3 below, produced in Gephi, shows the Iranian network colorized by the most influential communities within the network. Similar to the Russian network, the most influential nodes have no labels because of Twitter's username hashing. Given the larger number of accounts present in the IO, the resulting network graph is highly complex and contains numerous features, a result of the nearly 300,000 interactions, or edges, present across over 50,000 vertices. The characteristic dandelion seed effect is again present around central vertices that mentioned a large number of accounts only a single time. Given the larger number of vertices present, however, more cross mentioning of accounts is clearly visible, denoted by the longer edges between two or more vertices.
+
+![Iran IO Mentions Network, 2021](mentions_Iran_2021_Network.png){fig-align="center"}
+
+## China
+
+The Chinese Twitter mentions network had 1,964 vertices and 9,054 edges, the smallest of the three IO networks by far. The mean distance was 1.623, suggesting a similar level of interconnection as that seen in the control networks. The network's transitivity was 3.35E-03. This was one order of magnitude higher than the Iranian network and the control networks and two orders of magnitude higher than the Russian network. This suggests that the accounts in the Chinese network were the most likely of the five networks to have adjacent vertices interact with other vertices. This is particularly interesting given that the Chinese IO fielded the largest number of accounts but had the fewest mentions of any of the IOs examined, yet, of the accounts that did mention others, these accounts were more interactive with other accounts and each other than the accounts observed in the other networks.
+
+The Chinese network's modularity was 0.593. This suggests the Chinese network was about as modular as its Russian counterpart. However, there were 43 major communities present in the Chinese network, the largest of the three IOs. This discrepancy between modularity and community size may be the result of an anomaly in the network discussed later in this section.
+
+The farthest vertex value for the Chinese network was nine, the highest among the three IOs. This may suggest either the network is less close-knit than the other two IO networks, or it could be a byproduct of the network's anomalous structure displayed in Figure 4 on the following page. The network's edge density was 2.35E-03. This made the Chinese network the most interconnected by several orders of magnitude above all other networks examined. The network, however, had a reciprocity score of zero. This suggests all the interaction in the network was one-way, like that found in the Russian network.
+
+The Chinese network was moderately encouraging of clique and community formation, with an assortativity value second only to Iran, albeit significantly smaller than Iran's very large assortativity score. China's assortativity value was 0.0514. This was one order of magnitude smaller than Iran but one order of magnitude higher than the control networks. This may imply the Chinese network engaged in a moderate amount of community targeting with its messaging.
+
+To get a better sense of the interconnectedness of the network, the Chinese network had its six measures of centrality calculated. As before, the aggregated results appear in the table below. The results again show a power-law like structure is present. On average, vertices within the network were not central to the overall network. What appears to be different from the previous two networks is that even these well-connected vertices were substantially less well connected and less important to the network than the top accounts for the previous two IO networks.
+
+```{r warning = FALSE}
+#| echo: false
+#| label: tbl-ch_cent
+#| tbl-cap-location: bottom
+#| tbl-cap: Centrality Statistics for the Chinese Network
+
+china_clean <- read_csv("china_2021_cleaned.csv", show_col_types = FALSE)
+
+china_clean <- cSplit(china_clean, "user_mentions", sep=",", direction = "long", type.convert = TRUE) #as.is warning surpressed by warning = FALSE
+
+china_net_d <- china_clean %>%
+  select(c(user_screen_name, user_mentions)) %>% # selects userid and those mentioned
+  filter(!is.na(user_mentions)) %>% # removes numerous NA values that would negatively impact graph
+  filter(user_mentions != 0) %>% # removes zero values present
+  graph_from_data_frame # creates network graph
+
+isolated_ch <- which(degree(china_net_d) == 0)
+net_clean_ch <- delete.vertices(china_net_d, isolated_ch) # Zero values were dropped
+
+# Create data frame with six measures of centrality, betweeness, eigenvector centrality, Pagerank, degree in, degree out, and strength.
+ch_cent<- data.frame(between = betweenness(net_clean_ch), eigenvector = centr_eigen(net_clean_ch)$vector,
+                     Pagerank = (page_rank(net_clean_ch)$vector), degree_in = degree(net_clean_ch, mode = "in"),
+                     degree_out = degree(net_clean_ch, mode = "out"), strength = strength(net_clean_ch))
+ch_cent <- cbind(account = rownames(ch_cent), ch_cent)
+
+kbl(summary(ch_cent[2:7]), format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+```
+
+Figure 4 below, produced in Gephi, shows the Chinese network colorized by the most influential communities within the network. Some interesting account names were left unhashed by Twitter; they were manually added in the graph. Unlike the previous two IO networks, the Chinese network has a very odd structure, presumably the result of some issue during the execution of the IO. The structure on the lower part of the graph formed as the result of numerous Chinese accounts inexplicably mentioning the account "\@fuck_next" alongside their Xinjiang/anti-Uyghur messaging. Interestingly, the Twitter account in question appears to be unaffiliated with the IO. This prompted researchers at the Australian Strategic Policy Institute to hypothesize that the anomaly was a mistake that may have come about from the usage of automated tools (Ryan, Bogle, Zhang, & Wallis, 2021). This strange occurrence likely skewed many of the above metrics by splitting the overall network into two isolated sub-networks. This could explain why some of the metrics resemble aspects of the control networks, which have their own type of isolated network features that will be discussed shortly. Outside of this anomaly, the main network is highly dense and contains three large communities. There also appears to be less of the dandelion seed effect, likely because of the relative lack of mentions in the main part of the Chinese network.
+
+![China IO Mentions Network, 2021](mentions_China_2021_Network_withlabels.png){fig-align="center"}
+
+## Control Networks
+
+The COVID-19 Twitter mentions networks, Control 1 and Control 2, were quite similar to each other and quite different from the IO networks in some key ways. Control 1 had 232,844 vertices and 248,786 edges, and Control 2 had 210,378 vertices and 341,943 edges, suggesting the IO networks may differ from legitimate social media activity in that they have a highly disproportionate vertex to edge ratio compared to the controls. The mean distance was 1.516 for Control 1 and 1.576 for Control 2. Control 1's transitivity was 3.74E-04 and Control 2's transitivity was 4.31E-04. This was on par with the Iranian network but differed from the Chinese and Russian networks.
+
+Control 1's modularity was 0.9319 and Control 2's modularity was 0.9252. This suggests more similarity between the controls and reinforces that the Iranian network was the closest of the three IOs to mimicking legitimate Twitter traffic. The two control networks starkly deviate, however, from all three IOs in their number of communities. Control 1 had 32,690 major communities, and Control 2 had 24,150 communities. This suggests organic conversations among Twitter users naturally produce far greater community diversity than the targeted messaging of IO networks.
+
+The farthest vertex value for Control 1 was 16, while Control 2 had a value of 13. This means legitimate networks required quite a few more jumps to reach the opposite side of each network than the IOs. Control 1 had an edge density of 4.59E-06, and Control 2 had edge density of 7.73E-06. This suggests the networks were much more diffuse than the IO networks, but again it appears that the Iranian network was the closest to mimicking real conversations, being only one order of magnitude off the diffuse nature of the control networks. Similarly, the Iranian network was the only IO to mimic real Twitter interactions by having reciprocity on par with the control networks, which had a reciprocity of 8.05E-04 for Control 1 and 1.23E-03 for Control 2.
+
+The one area where the two control networks seem to differ from each other is on their assortativity. Control 1 had a negative assortativity value of -0.0122, and Control 2 had a positive assortativity value of 0.0077. Ultimately, both were closer to zero assortativity than the IO networks, and Control 1 was somewhat unwelcoming to the formation of cliques. However, upon further reflection, this makes sense given the timeframe. In 2020, during the height of the COVID-19 pandemic, there was a significant amount of chaos and confusion in the information environment. This chaotic time, particularly earlier in 2020 when Control 1's data was gathered, may have worked to prevent users from seeking like-minded individuals when they did not know who or what to believe about the emerging virus.
+
+To get a better sense of the interconnectedness of the two control networks, the six measures of centrality were calculated. As before, the aggregated results appear in @tbl-cv_cent_1 and @tbl-cv_cent_2 to remain consistent with the previous presentation of results, which contained numerous hashed values. As can be seen in the tables, power law-like behavior appears again to be at play in both control networks. These handfuls of influential accounts were presumably operated by the few voices of authority or influence during the early pandemic period, such as health officials or politicians. However, it appears that, amid the cacophony of cross-discussions, even these influential accounts were less central or important to the discussions surrounding COVID-19 than some of the most influential accounts in the Iranian or Russian networks. Instead, the Chinese IO appears, on its surface, to have mimicked legitimate traffic better when it comes to measures of centrality, but this could be the result of the two-structure anomaly in the Chinese network rather than a real effect.
+
+```{r warning = FALSE}
+#| echo: false
+#| label: tbl-cv_cent_1
+#| tbl-cap-location: bottom
+#| tbl-cap: Centrality Statistics for the Control 1 Network
+
+covid_2020_1 <- read_csv("Covid-19 Twitter Dataset (Apr-Jun 2020).csv", show_col_types = FALSE)
+
+covid_2020_1 <- cSplit(covid_2020_1, "user_mentions", sep=",", direction = "long", type.convert = TRUE) #as.is warning surpressed by warning = FALSE
+
+covid_net_d1 <- covid_2020_1 %>%
+  select(c(original_author, user_mentions)) %>% # selects userid and those mentioned
+  filter(!is.na(user_mentions)) %>% # removes numerous NA values that would negatively impact graph
+  graph_from_data_frame # creates network graph
+
+isolated_cv1 <- which(degree(covid_net_d1) == 0)
+net_clean_cv1 <- delete.vertices(covid_net_d1, isolated_cv1) # Zero values were dropped
+
+# Create data frame with six measures of centrality, betweeness, eigenvector centrality, Pagerank, degree in, degree out, and strength.
+cv1_cent<- data.frame(bet = betweenness(net_clean_cv1),eig = centr_eigen(net_clean_cv1)$vector,
+                     p_rank = (page_rank(net_clean_cv1)$vector), degr_in = degree(net_clean_cv1, mode = "in"),
+                     degr_out = degree(net_clean_cv1, mode = "out"), stg = strength(net_clean_cv1))
+cv1_cent <- cbind(account = rownames(cv1_cent), cv1_cent)
+
+kbl(summary(cv1_cent[2:7]), format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+```
+
+```{r warning = FALSE}
+#| echo: false
+#| label: tbl-cv_cent_2
+#| tbl-cap-location: bottom
+#| tbl-cap: Centrality Statistics for the Control 2 Network
+
+covid_2020_2 <- read_csv("Covid-19 Twitter Dataset (Aug-Sep 2020).csv", show_col_types = FALSE)
+
+covid_2020_2 <- cSplit(covid_2020_2, "user_mentions", sep=",", direction = "long", type.convert = TRUE) #as.is warning surpressed by warning = FALSE
+
+covid_net_d2 <- covid_2020_2 %>%
+  select(c(original_author, user_mentions)) %>% # selects userid and those mentioned
+  filter(!is.na(user_mentions)) %>% # removes numerous NA values that would negatively impact graph
+  graph_from_data_frame # creates network graph
+
+isolated_cv2 <- which(degree(covid_net_d2) == 0)
+net_clean_cv2 <- delete.vertices(covid_net_d2, isolated_cv2) # Zero values were dropped
+
+cv2_cent<- data.frame(bet = betweenness(net_clean_cv2),eig = centr_eigen(net_clean_cv2)$vector,
+                     p_rank = (page_rank(net_clean_cv2)$vector), degr_in = degree(net_clean_cv2, mode = "in"),
+                     degr_out = degree(net_clean_cv2, mode = "out"), stg = strength(net_clean_cv2))
+cv2_cent <- cbind(account = rownames(cv2_cent), cv2_cent)
+
+kbl(summary(cv2_cent[2:7]), format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+```
+
+Figures 5 and 6 below, both produced in Gephi, show the striking differences in the structure of the control networks compared to the three IOs. While the control graphs exhibit some structured, centralized interaction between Twitter users, a large portion of the mentions happen in smaller, isolated ways, which produces the Oort Cloud-like structure orbiting the central conversations. By contrast, the IO networks were much more centralized and lack indications of these innumerable side conversations like those seen below in networks comprised of legitimate Twitter traffic.
+
+![COVID-19 Mentions Network 1, 2020](mentions_COVID_2020_1_Network.png){fig-align="center"}
+
+![COVID-19 Mentions Network 2, 2020](mentions_COVID_2020_2_Network.png){fig-align="center"}
+
+# The Feasibility of Making Cross-Network Comparisons
+
+When comparing across the three IO networks as well as comparing the IO networks to the controls, noticeable differences appear in terms of both visual structure and key statistics. @tbl-networkstats below shows a summary of the key network statistics for each network examined in the preceding pages.
+
+```{r}
+#| echo: false
+#| label: tbl-networkstats
+#| tbl-cap-location: bottom
+#| tbl-cap: Key Network Statistics of Each Network
+
+network_results <- read_csv("mentions_network_results.csv", show_col_types = FALSE)
+
+network_results$Russia <- as.character(network_results$Russia)
+network_results$China <- as.character(network_results$China)
+network_results$Iran <- as.character(network_results$Iran)
+network_results$`Control 1` <- as.character(network_results$`Control 1`)
+network_results$`Control 2` <- as.character(network_results$`Control 2`)
+
+
+kbl(network_results, format = "html", align = "c") %>%
+  kable_classic(full_width = T) %>%
+  row_spec(0, bold = T)
+
+
+```
+
+Additionally, the line graphs in Table 7 below show visual comparisons of the key network statistics listed in the table above to give a better intuition of the similarities and differences across each network. In each case, there appears to be at least some visible difference between the values of the three IO networks as well as discernible differences when compared to the two control networks.
+
+|                                                                        |                                                                    |
+|-------------------------------------|-----------------------------------|
+| ![](Metric%20images/assortativity.png){fig-align="center" width="400"} | ![Community Size](Metric%20images/community_size.png){width="400"} |
+| ![](Metric%20images/edge_density.png){width="400"}                     | ![](Metric%20images/edges.png){width="400"}                        |
+| ![](Metric%20images/farthest_vertex.png){width="400"}                  | ![](Metric%20images/mean_distance.png){width="400"}                |
+| ![](Metric%20images/modularity.png){width="400"}                       | ![](Metric%20images/reciprocity.png){width="400"}                  |
+| ![](Metric%20images/transitivity.png){width="400"}                     | ![](Metric%20images/vertices.png){width="400"}                     |
+
+However, even seemingly obvious differences require testing for statistical significance to ensure there are meaningful differences present. While the unique structure of each network was clearly established at the beginning of this paper (both in terms of each network graph having significantly different mean distance and transitivity from 100 random graphs), making robust cross-network comparisons was much more challenging to do. Attempting to establish cross-network statistical significance revealed a major limitation of this study---a lack of statistical network data. This hindered the ability to make robust comparisons using the ten key network statistics listed above.
+
+When testing the statistical significance of the values in the above tables, the three IOs were assigned to the "IO" group, and the two controls were assigned to the "control" group, producing n=3 and n=2 for each of the ten metrics. Prior to conducting any tests, there was concern that the small sample size would be a problem, and this proved to be the case. All two-sided t-tests except farthest vertex (p-value=0.03599) failed. To validate this one significant result amid multiple failures, one-way ANOVA tests were also conducted. Two metrics seemed to have significant results when conducting the ANOVA tests: community size (p-value=0.00297) and farthest vertex (p-value=0.0486). All other ANOVA tests failed. Conover's test of multiple comparisons was run to see if there was pair-wise statistical significance present. This produced NA values on every pair-wise comparison. This appeared to confirm that lack of data was a major problem. Even though the datasets themselves comprised hundreds of thousands of data points, the outputs of the functions used by the igraph package result in single, scalar values for each network statistic, meaning five networks in, five numbers out.
+
+Thus, for the key network statistics listed in the table and charts above, farthest vertex appears to be the only metric to have statistically significant difference when comparing the IO group to the control group. Unfortunately, the usefulness of this metric for detecting IOs is limited at best given that it simply measures a network's diameter without providing additional structural context. Community size was statistically significant in only one of the two tests, raising questions about its reliability as a metric to identify IOs amid legitimate social media traffic. No other metrics could have their null hypotheses rejected. Further, likely due to the low sample size used in these tests, pair-wise comparisons were not possible. Future projects with a larger number of networks may be able to arrive at different results.
+
+Significance testing of the results then turned to an examination of the other network values that were calculated, specifically the six measures of centrality. In this case, small sample sizes were not a concern as each network had thousands of observations, resulting in a large data frame containing over 500,000 rows of centrality measurements grouped by "IO" and "control." ANOVA models were created for the betweenness, eigenvector, Pagerank, degree in, degree out, and strength scores. Each cross-group comparison was highly statistically significant, with p-values for each model of less than 2E-16. This testing confirmed that the differences in centrality between IO networks and the control networks were real.
+
+Separate ANOVA models were then created using a "network" variable that had the original label for each network attached, producing five different groups. Each model produced similar results to the previous ANOVA tests that compared IO vs. control. That is, each model showed high statistical significance. These models were then run through a Tukey multiple comparisons test to get insight into how the statistical significance was broken down by network. With regard to betweenness, the Iranian network differed in a statistically significant sense from Control 1, Control 2, and Russia. For eigenvector centrality, all networks differed from each other except the pairing of Control 1-Control 2. Pagerank had the same result as eigenvector centrality. On the measure of degree in, Russia differed from Iran and China, while China differed from Iran and Control 2. For degree out, Russia differed from Control 1 and Control 2, and Iran also differed from Control 1 and Control 2. The strength metric showed China differed with Iran, Russia, and Control 2, and Russia and Iran differed from each other as well. The 95% confidence intervals for each pair-wise comparison across all six metrics appear below in Table 8. Confidence intervals that pass through or include zero are not statistically significant while those that do not pass through zero are statistically significant.
+
+![Confidence intervals for Betweenness Comparisons](Metric%20images/centrality/betweenness.png){fig-align="center"}
+
+![Confidence intervals for Eigenvector Centrality Comparisons](Metric%20images/centrality/eigenvector.png){fig-align="center"}
+
+![Confidence intervals for Pagerank Comparisons](Metric%20images/centrality/Pagerank.png){fig-align="center"}
+
+![Confidence intervals for Degree In Comparisons](Metric%20images/centrality/degreein.png)
+
+![Confidence intervals for Degree Out Comparisons](Metric%20images/centrality/degreeout.png){fig-align="center"}
+
+![Confidence intervals for Strength Comparisons](Metric%20images/centrality/strength.png){fig-align="center"}
+
+# Implications
+
+Across all six measures of centrality, at least one of the three IO networks differed from at least one of the control networks in a statistically significant way. This means that there are characteristics about each of the IO networks that stood out from legitimate traffic in some meaningful level, indicating each could possibly be detected using one or more of these centrality metrics. In particular, eigenvector centrality and Pagerank seemed to produce the starkest differences between the networks. Interestingly, there was almost no discernible difference between the two control networks when it came to their eigenvector or Pagerank centrality, meaning the legitimate networks were virtually identical to each other as far as these metrics were concerned. However, every IO network was highly different from each other and from the control networks. This implies that these centrality metrics could be used not only to differentiate IO networks from legitimate activity but also to differentiate IO networks from each other for the purpose of studying and classifying evolving IO tactics employed by various countries.
+
+What use case could this fill? If, for example, a particularly suspicious hashtag started trending on Twitter, the activity around that hashtag might represent a somewhat self-contained IO network, which could be studied, either internally by Twitter or externally by disinformation researchers. This self-contained network could then even be compared with either random samplings of tweets or other hashtags to determine if the suspicious hashtag stood out in terms of how it was structured. The findings demonstrated in this paper surrounding the significance of centrality measurements could enable earlier detection of possible IO networks on social media platforms. Further, these findings simultaneously demonstrate a need for further research into using SNA as a detection method, namely through the conduct of studies with more network samples to determine if the key network statistics can also add to the IO detection toolkit.
+
+# Conclusion
+
+The analysis of the three IO networks and the two COVID-19 control networks produced several key takeaways that may enhance social media companies' ability to detect and remove IOs:
+
+-   Each IO network was unique in its structure and significantly different from 100 random graphs based on each network's own characteristics.
+
+-   After the uniqueness of the networks was established, the key network statistics for each of the five networks were calculated and presented. When looking at the raw numbers, there appears to be some noticeable differences between both the physical structure of the network and the network statistics when comparing the IO networks to the controls. Power laws again seemed to be at play in each of the networks, exerting a strong influence over the measures of centrality, which tended to favor a handful of accounts per network.
+
+-   Iran once more seems to be a threat actor to watch in the IO space, as several of the network's metrics closely resembled the control networks, suggesting a level of sophistication and online interactivity that could put it on par or exceed the capabilities of Russia or China in evading detection.
+
+-   Because of the sophistication that was once again demonstrated by a threat actor that has not garnered as much attention, analysts are reminded against the dangers of getting tunnel vision and overly focusing on clear and obvious dangers while missing less obvious but no less dangerous threats.
+
+-   Unfortunately, even though each graph had a unique structure on its own, when comparing the IO networks to the control networks cross-network statistical significance of the key network statistics could not be established. This was likely due to too low of a sample size (n=5).
+
+-   Further research should be done using larger numbers of networks of n=20 to 30 for both the IO networks and controls to determine if it is truly possible to make cross-network comparisons for the purpose of detecting IOs via network statistics.
+
+-   The usage of measures of centrality, as opposed to the key network statistics, produced statistically significant, robust results. ANOVA comparisons between the "IO" group and "control" group showed incredibly low p-values on each metric, leading to the conclusion that there is statistically significant difference between the centrality measures of the IO group compared to the control group.
+
+-   Across all six metrics, at least one IO differed significantly in pair-wise comparisons from at least one of the controls, suggesting measures of centrality could be used to detect IO networks. Eigenvector centrality and Pagerank proved especially promising on this front, with statistically significant differences appearing between not only each IO and the controls but also between the IOs themselves.
+
+-   The findings of this report may enhance the detection of IOs in some instances, such as suspicious hashtags that comprise somewhat isolated sub-networks on large social media platforms. External researchers or internal Trust and Safety experts at social media companies may be able to use measures of centrality to compare suspicious sub-networks and hashtags to other sub-networks and innocuous hashtags to identify structural differences that may merit further investigation.
