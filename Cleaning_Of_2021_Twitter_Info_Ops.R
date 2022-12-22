@@ -1,4 +1,5 @@
 ######Package load########
+# Author: Cody Wilson
 
 # Loads packages using the groundhog package. Groundhog enables reproducible     
 # analysis by recording the date the packages were used. It then downloads those 
