@@ -8,9 +8,19 @@ This report builds upon the work done in part one of this series by examining th
 
 ## How to use this project:
 
-Go to [Twitter's Transparency Center](https://transparency.twitter.com/en/reports/moderation-research.html) and acquire the original datasets used in this project. I will not be making the raw data available while it remains easily accessible via Twitter's own service.
-Acquire the "People’s Republic of China - Xinjiang (December 2021) - 2048 Accounts" dataset released in December 2021, particularly the Tweet Information file.
-Acquire the Tweet Information file from the "Iran (February 2021) - 238 Accounts" dataset released in February 2021.
-Lastly, acquire the Tweet Information file from the "Russia IRA (February 2021) - 31 Accounts" dataset also releaed in February 2021.
-Download the R scripts and Quarto markdown file, and Gephi files provided here to replicate, build upon, or fork the cleaning and analysis process that I used.
+- Go to [Twitter's Transparency Center](https://transparency.twitter.com/en/reports/moderation-research.html) and acquire the original datasets used in this project. Given the rapidly evolving policies and changes at Twitter currently, I will not be making the raw data available while it remains easily accessible via Twitter's own service.
+
+- Acquire the "People’s Republic of China - Xinjiang (December 2021) - 2048 Accounts" dataset released in December 2021, particularly the Tweet Information file.
+
+- Acquire the Tweet Information file from the "Iran (February 2021) - 238 Accounts" dataset released in February 2021.
+
+- Acquire the Tweet Information file from the "Russia IRA (February 2021) - 31 Accounts" dataset also releaed in February 2021.
+
+- Then, go to Kaggle user [Arunava Kumar Chakraborty's COVID-19 dataset](https://www.kaggle.com/datasets/arunavakrchakraborty/covid19-twitter-dataset) page and download the 61MB file that contains both COVID-19 datasets that were used as controls.
+
+- Download the R scripts and Quarto markdown file, and Gephi files provided here to replicate, build upon, or fork the cleaning and analysis process that I used.
+
 These datasets provided a massive wealth of possible information, and it is my goal to conduct additional analysis in future projects. I list out several potential ideas of how the data could be further analyzed in part one of this project, located [here](https://github.com/CWilson01/twitter-info-ops-pt1). If you try one of these or have additional ideas, feel free to drop me a line at cody [@] wonksecurity [.] com. I'd love to hear what you think.
+
+## License
+The code, markdown, and Gephi files in this project are released under a GPL-3.0 license. The data from Twitter's Transparency Center is bound by its terms of use, found [here](https://developer.twitter.com/en/developer-terms). The COVID-19 datasets made available by A. K. Chakraborty are available on Kaggle under a [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. Full credit for this dataset goes to: Chakraborty A.K., Das S., Kolya A.K. (2021) Sentiment Analysis of Covid-19 Tweets Using Evolutionary Classification-Based LSTM Model. In: Pan I., Mukherjee A., Piuri V. (eds) Proceedings of Research and Applications in Artificial Intelligence. Advances in Intelligent Systems and Computing, vol 1355. Springer, Singapore. https://doi.org/10.1007/978-981-16-1543-6_7.
