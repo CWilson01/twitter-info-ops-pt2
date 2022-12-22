@@ -22,5 +22,5 @@ This report builds upon the work done in part one of this series by examining th
 
 These datasets provided a massive wealth of possible information, and it is my goal to conduct additional analysis in future projects. I list out several potential ideas of how the data could be further analyzed in part one of this project, located [here](https://github.com/CWilson01/twitter-info-ops-pt1). If you try one of these or have additional ideas, feel free to drop me a line at cody [@] wonksecurity [.] com. I'd love to hear what you think.
 
-## License
+## License and Attribution
 The code, markdown, and Gephi files in this project are released under a GPL-3.0 license. The data from Twitter's Transparency Center is bound by its terms of use, found [here](https://developer.twitter.com/en/developer-terms). The COVID-19 datasets made available by A. K. Chakraborty are available on Kaggle under a [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. Full credit for this dataset goes to: Chakraborty A.K., Das S., Kolya A.K. (2021) Sentiment Analysis of Covid-19 Tweets Using Evolutionary Classification-Based LSTM Model. In: Pan I., Mukherjee A., Piuri V. (eds) Proceedings of Research and Applications in Artificial Intelligence. Advances in Intelligent Systems and Computing, vol 1355. Springer, Singapore. https://doi.org/10.1007/978-981-16-1543-6_7.
