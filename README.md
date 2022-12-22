@@ -22,5 +22,22 @@ This report builds upon the work done in part one of this series by examining th
 
 These datasets provided a massive wealth of possible information, and it is my goal to conduct additional analysis in future projects. I list out several potential ideas of how the data could be further analyzed in part one of this project, located [here](https://github.com/CWilson01/twitter-info-ops-pt1). If you try one of these or have additional ideas, feel free to drop me a line at cody [@] wonksecurity [.] com. I'd love to hear what you think.
 
+## About the files
+- Cleaning_Of_2021_Twitter_Info_Ops.R is the cleaning script used to prepare the raw Twitter data for analysis. It is the same file as the one used in part 1.
+
+- SNA_Of_2021_Twitter_Mentions.R contains all of the code to reproduce the results discussed in the report.
+
+- Twitter_info_op_report_v2.qmd is the Quarto markdown file that was used to produce the initial cut of the report before it was exported to Microsoft Word for finalization.
+
+- g_covid_2022.gephi contains the Gephi network graphs used to produce the Control 1 and Control 2 network visualizations.
+
+- mentions_ch_ru_ir_2021.gephi contains the Gephi network graphs to produce the three IO network visuals.
+
+- mentions_network_results.csv is the output of all the results used in the table shown in the report.
+
+- mentions_network_results2.csv contains these same results but organized differently for t-testing
+
+- mentions_network_results3.csv similarly contains results organized differently for ANOVA testing. Each network was assigned into either an "IO" group or a "control" group for easier testing.
+
 ## License and Attribution
 The code, markdown, and Gephi files in this project are released under a GPL-3.0 license. The data from Twitter's Transparency Center is bound by its terms of use, found [here](https://developer.twitter.com/en/developer-terms). The COVID-19 datasets made available by A. K. Chakraborty are available on Kaggle under a [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. Full credit for this dataset goes to: Chakraborty A.K., Das S., Kolya A.K. (2021) Sentiment Analysis of Covid-19 Tweets Using Evolutionary Classification-Based LSTM Model. In: Pan I., Mukherjee A., Piuri V. (eds) Proceedings of Research and Applications in Artificial Intelligence. Advances in Intelligent Systems and Computing, vol 1355. Springer, Singapore. https://doi.org/10.1007/978-981-16-1543-6_7.
